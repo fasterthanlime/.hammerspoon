@@ -42,6 +42,19 @@ local function pandocHtmlToMarkdown(html)
     local md  = hs.execute(cmd, true) -- true = capture output
 
     os.remove(tmp)
+
+    -- Strip base64 images from markdown output
+    -- Pattern matches: ![alt](data:image/...;base64,...)
+    md = md:gsub("%b[]%b()", function(img)
+        if img:find("data:image") then
+            return ""
+        end
+        return img
+    end)
+
+    -- Also strip inline image tags that might be present
+    md = md:gsub("<img [^>]*src=['\"][^'\"]*data:image/[^'\"]*['\"][^>]*>", "")
+
     return md
 end
 
